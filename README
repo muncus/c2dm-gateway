@@ -1,0 +1,5 @@
+A simple gateway to store incoming email messages, and notify the intended recipient via c2dm.
+The c2dm notification includes a url from which the rest of the message can be downloaded.
+
+The intent is to use this gateway to deliver mail messages to Klaxon (http://code.google.com/p/klaxon).
+
