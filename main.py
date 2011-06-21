@@ -1,33 +1,56 @@
 #!/usr/bin/env python
-#
-# Copyright 2007 Google Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
+
+from google.appengine.api import users
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import util
 
+import models
+
+C2DM_SENDER_ADDRESS = 'klaxon-c2dm@gmail.com'
+
+class RegistrationHandler(webapp.RequestHandler):
+  def get(self):
+    user = users.get_current_user()
+    if not user:
+      self.response.set_status(403, "User not logged in")
+      return 
+    token = self.request.get('token')
+
+    existingUserQuery = db.GqlQuery(
+      "SELECT * from Person WHERE user = :1",
+      user)
+    p = existingUserQuery.get()
+    if p:
+      # if tokens match, no changes needed.
+      if token == p.registration_id:
+        self.response.set_status(200, "already registered.")
+      else:
+        p.registration_id = token
+        p.put()
+        self.response.set_status(200, "Token updated.")
+
+    else:
+      p = models.Person()
+      p.user = user
+      p.registration_id = token
+      p.enabled = True
+      p.put()
+      self.response.set_status(200, "Registered new user.")
+
 
 class MainHandler(webapp.RequestHandler):
-    def get(self):
-        self.response.out.write('Hello world!')
+  def get(self):
+    self.response.out.write('Hello world!')
 
 
 def main():
-    application = webapp.WSGIApplication([('/', MainHandler)],
-                                         debug=True)
-    util.run_wsgi_app(application)
+  application = webapp.WSGIApplication(
+    [('/', MainHandler),
+     ('/register', RegistrationHandler),
+    ], debug=True)
+
+  util.run_wsgi_app(application)
 
 
 if __name__ == '__main__':
-    main()
+  main()
