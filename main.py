@@ -12,12 +12,13 @@ class RegistrationHandler(webapp.RequestHandler):
   def get(self):
     user = users.get_current_user()
     if not user:
-      self.response.set_status(403, "User not logged in")
+      #self.response.set_status(403, "User not logged in")
+      self.redirect(users.create_login_url('/register'))
       return 
     token = self.request.get('token')
 
-    existingUserQuery = db.GqlQuery(
-      "SELECT * from Person WHERE user = :1",
+    existingUserQuery = models.Person.gql(
+      "WHERE user = :1",
       user)
     p = existingUserQuery.get()
     if p:

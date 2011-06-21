@@ -2,7 +2,7 @@ from google.appengine.ext import db
 
 class Person(db.Model):
   """Represents a user of this service."""
-  user = db.UserProperty(required=True)
+  user = db.UserProperty()
   enabled = db.BooleanProperty(default=True)
   registration_id = db.StringProperty() # android c2dm registration id.
 

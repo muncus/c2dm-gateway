@@ -1,6 +1,7 @@
 # largely based on sample code from appengine docs.
 
 import logging, email, re
+from google.appengine.api import users
 from google.appengine.ext import webapp 
 from google.appengine.ext.webapp.mail_handlers import InboundMailHandler 
 from google.appengine.ext.webapp.util import run_wsgi_app
@@ -24,7 +25,24 @@ class StoreMessageHandler(InboundMailHandler):
     return None
       
   def receive(self, mail_message):
-    logging.info("Received a message for: " + self.extractIntendedRecipientEmail(mail_message))
+    intended_recipient = self.extractIntendedRecipientEmail(mail_message)
+    logging.info("Received a message for: " + intended_recipient)
+
+    intended_user = users.User(intended_recipient)
+    p = models.Person.gql("WHERE user = :1", intended_user).get()
+    if not p:
+      logging.fatal("User unknown: " + intended_recipient)
+      return
+    else:
+      m = models.Message()
+      m.owner = p.user
+      m.subject = mail_message.subject
+      #TODO: make this handle messages better.
+      m.body = mail_message.original.as_string()
+      #m.email_date = mail_message.date
+      m.put()
+      logging.info("stored message!")
+
     
 
 application = webapp.WSGIApplication([StoreMessageHandler.mapping()], debug=True)
