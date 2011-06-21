@@ -8,6 +8,6 @@ inbound_services:
 
 handlers:
 - url: /_ah/mail/.+ 
-  script: mail_in.py
+  script: in_mail.py
 - url: .*
   script: main.py
