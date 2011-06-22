@@ -8,7 +8,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 import models
 
-INCOMING_MAIL_DOMAIN = 'pager-gateway.appspotmail.com'
+INCOMING_MAIL_DOMAIN = 'muncus.appspotmail.com'
 INCOMING_ADDRESS_RE = re.compile('(?P<recipient>[a-zA-Z0-9_+.-]+)@' + INCOMING_MAIL_DOMAIN)
 
 class StoreMessageHandler(InboundMailHandler):
