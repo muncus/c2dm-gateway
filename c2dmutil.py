@@ -5,19 +5,21 @@ from google.appengine.ext import db
 
 import models
 
+import logging
 import urllib
 import urllib2
+
+AUTH_URL = 'https://www.google.com/accounts/ClientLogin'
+C2DM_URL = 'http://android.apis.google.com/c2dm/send'
 
 class C2dmUtil(object):
   SERVICE_TOKEN_TYPE = 'ac2dm'
   USERAGENT = 'Klaxon-Klaxonc2dmpush-1.0'
 
-  AUTH_URL = 'https://www.google.com/accounts/ClientLogin'
-  C2DM_URL = 'http://android.apis.google.com/c2dm/send'
 
   def __init__(self):
     """load the token, user, and password."""
-    self.auth_info = C2dmSender.gql('LIMIT 1').get()
+    self.auth_info = models.C2dmSender.gql('LIMIT 1').get()
 
   def getAuthToken(self):
     """if authtoken is empty, make the ClientLogin request."""
@@ -27,8 +29,8 @@ class C2dmUtil(object):
     post_data = {
       'Email': self.auth_info.username,
       'Passwd': self.auth_info.password,
-      'service': SERVICE_TOKEN_TYPE,
-      'source': USERAGENT,
+      'service': self.SERVICE_TOKEN_TYPE,
+      'source': self.USERAGENT,
       }
     req = urllib2.Request(AUTH_URL, urllib.urlencode(post_data))
     response = urllib2.urlopen(req)
@@ -36,7 +38,8 @@ class C2dmUtil(object):
     for l in response.readlines():
       if 'Auth=' in l:
         logging.info("Found auth line!")
-        self.auth_info.authtoken = l[5:]
+        token = l[5:].strip()
+        self.auth_info.authtoken = token
         self.auth_info.put()
 
     return self.auth_info.authtoken

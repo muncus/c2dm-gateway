@@ -4,10 +4,9 @@ from google.appengine.api import users
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import util
 
-import models
-from c2dmutil iimport C2dmUtil
+import c2dmutil
 
-C2DM_SENDER_ADDRESS = 'klaxon-c2dm@gmail.com'
+import models
 
 class RegistrationHandler(webapp.RequestHandler):
   def get(self):
@@ -48,8 +47,8 @@ class PushTestHandler(webapp.RequestHandler):
   """test by sending a stock push message."""
   def get(self):
     #send a test push message.
-    c = C2dmUtil()
-    me = models.Person.gql('WHERE user = :1', users.User('muncus@gmail.com'))
+    c = c2dmutil.C2dmUtil()
+    me = models.Person.gql('WHERE user = :1', users.get_current_user()).get()
     c.getAuthToken()
     c.sendMessage(me)
 
