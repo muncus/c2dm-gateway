@@ -5,6 +5,7 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp import util
 
 import models
+from c2dmutil iimport C2dmUtil
 
 C2DM_SENDER_ADDRESS = 'klaxon-c2dm@gmail.com'
 
@@ -43,11 +44,21 @@ class MainHandler(webapp.RequestHandler):
   def get(self):
     self.response.out.write('Hello world!')
 
+class PushTestHandler(webapp.RequestHandler):
+  """test by sending a stock push message."""
+  def get(self):
+    #send a test push message.
+    c = C2dmUtil()
+    me = models.Person.gql('WHERE user = :1', users.User('muncus@gmail.com'))
+    c.getAuthToken()
+    c.sendMessage(me)
+
 
 def main():
   application = webapp.WSGIApplication(
     [('/', MainHandler),
      ('/register', RegistrationHandler),
+     ('/test', PushTestHandler),
     ], debug=True)
 
   util.run_wsgi_app(application)

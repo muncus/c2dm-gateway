@@ -1,5 +1,10 @@
 from google.appengine.ext import db
 
+class C2dmSender(db.Model):
+  username = db.StringProperty()
+  password = db.StringProperty()
+  authtoken = db.StringProperty()
+
 class Person(db.Model):
   """Represents a user of this service."""
   user = db.UserProperty()
