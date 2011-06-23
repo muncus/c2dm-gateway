@@ -3,3 +3,24 @@ The c2dm notification includes a url from which the rest of the message can be d
 
 The intent is to use this gateway to deliver mail messages to Klaxon (http://code.google.com/p/klaxon).
 
+C2DM docs: http://code.google.com/android/c2dm/
+
+Useful URLS:
+- /register - used by devices to register with the service.
+  - Args: 
+    - token - c2dm registration id.
+    - sender - email address that is authorized to send c2dm messages.
+- /test - debugging. sends a push message to the current user, assuming they are already registered.
+- /admin - a simple interface to allow the inputting of credentials for the sender of C2dm messages.
+  - *THESE CREDENTIALS ARE STORED IN THE APPENGINE DATASTORE*
+  - you probably dont want to use your personal account.
+
+
+The Anatomy of a C2dm Message:
+- registration_id
+- collapse_key
+TODO: 
+  - data.from
+  - data.subject
+  - data.body
+  - data.url

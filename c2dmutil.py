@@ -12,6 +12,11 @@ import urllib2
 AUTH_URL = 'https://www.google.com/accounts/ClientLogin'
 C2DM_URL = 'http://android.apis.google.com/c2dm/send'
 
+class C2dmError(Exception):
+  """Parent class for types of exception."""
+  pass
+
+
 class C2dmUtil(object):
   SERVICE_TOKEN_TYPE = 'ac2dm'
   USERAGENT = 'Klaxon-Klaxonc2dmpush-1.0'
@@ -44,20 +49,44 @@ class C2dmUtil(object):
 
     return self.auth_info.authtoken
 
-  def sendMessage(self, user):
+  def sendMessage(self, user, retry=True, **kwargs):
     """Sends a message to the specified user/Person."""
     #TODO: extend this to take kwargs, or subj/url args.
+    #TODO: and add size checking. must be < 1k.
     
     post_data = {
       'registration_id': user.registration_id,
       'collapse_key': 'c2dmpage',
-      'data.foo': 'bar',
     }
+    
+    data_length = 0
+    for k, v in kwargs.iteritems():
+      data_length += len(v)
+      post_data['data.' + k] = v
+    logging.info("Data message length: %d" % data_length)
+
     req = urllib2.Request(C2DM_URL, urllib.urlencode(post_data))
     req.add_header('Authorization', 'GoogleLogin auth=%s' % self.auth_info.authtoken)
 
     resp = urllib2.urlopen(req)
 
+    #ugh. this is resp.code in 2.4, and resp.getcode() in 2.5
+    if 401 == resp.code:
+      #auth token failure. oh noes!
+      if retry:
+        logging.warn("Sender Credentials not valid! trying to obtain new credentials.")
+        self.getAuthToken()
+        return self.sendMessage(user, retry=False)
+      else:
+        logging.error("Could not obtain functional ClientLogin token!!!!")
+        return
+
+    if 503 == resp.code:
+      #TODO: handle this better.
+      return
+
     for l in resp.readlines():
+      if 'Error=' in l:
+        raise C2dmError(l)
       logging.info(l)
       
