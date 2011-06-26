@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from google.appengine.api import mail
 from google.appengine.api import users
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import util
@@ -7,6 +8,31 @@ from google.appengine.ext.webapp import util
 import c2dmutil
 
 import models
+
+
+class MessageHandler(webapp.RequestHandler):
+  """ Handler to display, and reply to Messages."""
+  def get(self):
+    msg_key = self.request.get('msg')
+    msg = models.Message.get_by_key_name(msg_key)
+    if not msg:
+      self.response.set_status(404, 'no such message')
+      return
+    self.response.out.write(msg.body)
+
+  def put(self):
+    """Takes two args, 'msg' and 'reply'."""
+    msg_key = self.request.get('msg')
+    reply = self.request.get('reply')
+    msg = models.Message.get_by_key_name(msg_key)
+
+    mail.send_mail(
+      sender=users.get_current_user().email(),
+      subject=msg.subject,
+      to=msg.sender,
+      body=reply)
+    self.response.set_status(200, "Sent reply")
+      
 
 class RegistrationHandler(webapp.RequestHandler):
   def get(self):
@@ -57,6 +83,7 @@ def main():
   application = webapp.WSGIApplication(
     [('/', MainHandler),
      ('/register', RegistrationHandler),
+     ('/m', MessageHandler),
      ('/test', PushTestHandler),
     ], debug=True)
 

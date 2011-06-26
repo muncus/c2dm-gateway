@@ -21,7 +21,6 @@ class C2dmUtil(object):
   SERVICE_TOKEN_TYPE = 'ac2dm'
   USERAGENT = 'Klaxon-Klaxonc2dmpush-1.0'
 
-
   def __init__(self):
     """load the token, user, and password."""
     self.auth_info = models.C2dmSender.gql('LIMIT 1').get()
@@ -51,8 +50,8 @@ class C2dmUtil(object):
 
   def sendMessage(self, user, retry=True, **kwargs):
     """Sends a message to the specified user/Person."""
-    #TODO: extend this to take kwargs, or subj/url args.
     #TODO: and add size checking. must be < 1k.
+    #NB: this doesnt appear to be true. i sent >1024 bytes of content, and it was delivered successfully.
     
     post_data = {
       'registration_id': user.registration_id,
@@ -70,7 +69,7 @@ class C2dmUtil(object):
 
     resp = urllib2.urlopen(req)
 
-    #ugh. this is resp.code in 2.4, and resp.getcode() in 2.5
+    #ugh. this is resp.code in 2.4, and resp.getcode() in 2.6
     if 401 == resp.code:
       #auth token failure. oh noes!
       if retry:

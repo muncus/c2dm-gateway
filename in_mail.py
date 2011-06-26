@@ -12,6 +12,8 @@ import models
 INCOMING_MAIL_DOMAIN = 'muncus.appspotmail.com'
 INCOMING_ADDRESS_RE = re.compile('(?P<recipient>[a-zA-Z0-9_+.-]+)@' + INCOMING_MAIL_DOMAIN)
 
+MESSAGE_BASE_URL = 'https://muncus.appspot.com/m?msg='
+
 class StoreMessageHandler(InboundMailHandler):
   """Save the message, but dont send c2dm message."""
 
@@ -48,7 +50,7 @@ class StoreMessageHandler(InboundMailHandler):
       logging.info("stored message!")
 
       c = c2dmutil.C2dmUtil()
-      c.sendMessage(p, subject=m.subject, body=m.body, frm=mail_message.sender)
+      c.sendMessage(p, subject=m.subject, body=m.body, frm=mail_message.sender, url=MESSAGE_BASE_URL+m.key())
 
     
 
