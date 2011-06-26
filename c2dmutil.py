@@ -63,6 +63,12 @@ class C2dmUtil(object):
       post_data['data.' + k] = v
     logging.info("Data message length: %d" % data_length)
 
+    if data_length > 1024: 
+      #truncate data.body field to fit.
+      bytes_to_remove = data_length - 1024
+      logging.info("trying to remove %d bytes from the body." % bytes_to_remove)
+      post_data['data.body'] = post_data['data.body'][0:-1*bytes_to_remove]
+
     req = urllib2.Request(C2DM_URL, urllib.urlencode(post_data))
     req.add_header('Authorization', 'GoogleLogin auth=%s' % self.auth_info.authtoken)
 
