@@ -51,7 +51,6 @@ class C2dmUtil(object):
   def sendMessage(self, user, retry=True, **kwargs):
     """Sends a message to the specified user/Person."""
     #TODO: and add size checking. must be < 1k.
-    #NB: this doesnt appear to be true. i sent >1024 bytes of content, and it was delivered successfully.
     
     post_data = {
       'registration_id': user.registration_id,
