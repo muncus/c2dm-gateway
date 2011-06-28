@@ -39,6 +39,7 @@ class StoreMessageHandler(InboundMailHandler):
     else:
       m = models.Message()
       m.owner = p.user
+      m.sender = mail_message.sender
       m.subject = mail_message.subject
       #TODO: make this handle messages better.
       bodies = mail_message.bodies('text/plain')
@@ -50,7 +51,7 @@ class StoreMessageHandler(InboundMailHandler):
       logging.info("stored message!")
 
       c = c2dmutil.C2dmUtil()
-      c.sendMessage(p, subject=m.subject, body=m.body, frm=mail_message.sender, url=MESSAGE_BASE_URL+m.key())
+      c.sendMessage(p, subject=m.subject, body=m.body, frm=mail_message.sender, url=MESSAGE_BASE_URL+str(m.key().id()))
 
     
 

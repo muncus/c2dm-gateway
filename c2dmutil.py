@@ -11,6 +11,7 @@ import urllib2
 
 AUTH_URL = 'https://www.google.com/accounts/ClientLogin'
 C2DM_URL = 'http://android.apis.google.com/c2dm/send'
+MAX_LENGTH = 1000 # maximum size of data.
 
 class C2dmError(Exception):
   """Parent class for types of exception."""
@@ -63,9 +64,9 @@ class C2dmUtil(object):
       post_data['data.' + k] = v
     logging.info("Data message length: %d" % data_length)
 
-    if data_length > 1024: 
+    if data_length > MAX_LENGTH: 
       #truncate data.body field to fit.
-      bytes_to_remove = data_length - 1024
+      bytes_to_remove = data_length - MAX_LENGTH
       logging.info("trying to remove %d bytes from the body." % bytes_to_remove)
       post_data['data.body'] = post_data['data.body'][0:-1*bytes_to_remove]
 

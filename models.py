@@ -17,6 +17,7 @@ class Message(db.Model):
   owner = db.UserProperty()
   body = db.TextProperty()
   subject = db.StringProperty()
+  sender = db.StringProperty()
   created = db.DateTimeProperty()
   email_date = db.DateTimeProperty() # storing this so we can compute latency of notification.
 
