@@ -9,6 +9,9 @@ inbound_services:
 handlers:
 - url: /_ah/mail/.+ 
   script: in_mail.py
+- url: /m.*
+  script: messagehandler.py
+  login: required
 - url: /admin
   script: admin.py
   login: admin
