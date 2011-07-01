@@ -5,6 +5,7 @@ import logging
 from google.appengine.api import mail
 from google.appengine.api import users
 from google.appengine.ext import webapp
+from google.appengine.ext.webapp import util
 
 import models
 
@@ -27,7 +28,7 @@ class MessageHandler(webapp.RequestHandler):
     reply = self.request.get('reply')
     msg = models.Message.get_by_id(int(msg_key))
 
-    logging.info("Replying to msg %s, from %s" % msg_key, msg.sender)
+    logging.info("Replying to msg %s, from %s" % (msg_key, msg.sender))
     mail.send_mail(
       sender=users.get_current_user().email(),
       subject=msg.subject,
