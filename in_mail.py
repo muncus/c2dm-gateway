@@ -1,6 +1,6 @@
 # largely based on sample code from appengine docs.
 
-import logging, email, re
+import logging, email, re, urllib
 from google.appengine.api import users
 from google.appengine.ext import webapp 
 from google.appengine.ext.webapp.mail_handlers import InboundMailHandler 
@@ -11,6 +11,7 @@ import models
 
 INCOMING_MAIL_DOMAIN = 'muncus.appspotmail.com'
 INCOMING_ADDRESS_RE = re.compile('(?P<recipient>[a-zA-Z0-9_+.-]+)@' + INCOMING_MAIL_DOMAIN)
+INCOMING_FROM_URL_RE = re.compile('/_ah/mail/(?P<recipient>[a-zA-Z0-9_+.%-]+)@' + INCOMING_MAIL_DOMAIN)
 
 MESSAGE_BASE_URL = 'https://muncus.appspot.com/m?msg='
 
@@ -25,6 +26,10 @@ class StoreMessageHandler(InboundMailHandler):
       if match:
         return re.sub('\+', '@', match.group('recipient'))
     logging.warn("No intended recipient found in list: %s" % msg.to)
+    # use the address posted in the path.
+    match = INCOMING_FROM_URL_RE.search(urllib.unquote(self.request.path))
+    if match:
+      return re.sub('\+', '@', match.group('recipient'))
     return None
       
   def receive(self, mail_message):
