@@ -13,7 +13,7 @@ class MessageHandler(webapp.RequestHandler):
   """ Handler to display, and reply to Messages."""
   def get(self):
     if self.request.get('reply'):
-      return self.put() # convenience, for testing.
+      return self.post() # convenience, for testing.
     msg_key = self.request.get('msg')
     msg = models.Message.get_by_id(int(msg_key))
     if not msg:
@@ -22,19 +22,26 @@ class MessageHandler(webapp.RequestHandler):
       return
     self.response.out.write(msg.body)
 
-  def put(self):
+  def post(self):
     """Takes two args, 'msg' and 'reply'."""
     msg_key = self.request.get('msg')
     reply = self.request.get('reply')
     msg = models.Message.get_by_id(int(msg_key))
+    if not msg:
+      self.response.set_status(400, "no such message")
+      self.response.out.write("no such message.")
 
-    logging.info("Replying to msg %s, from %s" % (msg_key, msg.sender))
-    mail.send_mail(
+    logging.info("Replying to msg %s, from %s, with %s " % (msg_key, msg.sender, reply))
+    logging.info("from: %s" % users.get_current_user().email())
+    reply_msg = mail.EmailMessage(
       sender=users.get_current_user().email(),
       subject=msg.subject,
       to=msg.sender,
       body=reply)
+    reply_msg.check_initialized()
+    reply_msg.send()
     self.response.set_status(200, "Sent reply")
+    self.response.out.write("Message sent!")
       
 
 def main():
