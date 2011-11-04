@@ -6,13 +6,16 @@ from google.appengine.api import mail
 from google.appengine.api import users
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import util
+from google.appengine.runtime.apiproxy_errors import ApplicationError
 
 import models
 
 class MessageHandler(webapp.RequestHandler):
   """ Handler to display, and reply to Messages."""
   def get(self):
+    logging.error("are we even getting here!?")
     if self.request.get('reply'):
+      logging.error("are we even getting here?")
       return self.post() # convenience, for testing.
     msg_key = self.request.get('msg')
     msg = models.Message.get_by_id(int(msg_key))
@@ -39,9 +42,20 @@ class MessageHandler(webapp.RequestHandler):
       to=msg.sender,
       body=reply)
     reply_msg.check_initialized()
-    reply_msg.send()
-    self.response.set_status(200, "Sent reply")
-    self.response.out.write("Message sent!")
+
+    #logging.error("sender: " + reply_msg.sender)
+    #logging.error("to: " + reply_msg.to)
+    #logging.error("subject: " + reply_msg.subject)
+    #logging.error("body: " + reply_msg.body)
+
+    try:
+      reply_msg.send()
+      self.response.set_status(200, "Sent reply")
+      self.response.out.write("Message sent!")
+    except ApplicationError, e:
+      logging.exception("Mail sending failed: %s", e)
+      self.response.set_status(500, "Reply not sent.")
+      self.response.out.write(e)
       
 
 def main():
