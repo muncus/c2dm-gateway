@@ -13,9 +13,7 @@ import models
 class MessageHandler(webapp.RequestHandler):
   """ Handler to display, and reply to Messages."""
   def get(self):
-    logging.error("are we even getting here!?")
     if self.request.get('reply'):
-      logging.error("are we even getting here?")
       return self.post() # convenience, for testing.
     msg_key = self.request.get('msg')
     msg = models.Message.get_by_id(int(msg_key))

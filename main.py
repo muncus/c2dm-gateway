@@ -42,6 +42,23 @@ class RegistrationHandler(webapp.RequestHandler):
       p.put()
       self.response.set_status(200, "Registered new user.")
 
+  def unregister(self):
+    """Remove the registration token for the current user."""
+    user = users.get_current_user()
+    if not user:
+      self.response.set_status(403, "Not logged in.")
+    existingUserQuery = models.Person.gql(
+      "WHERE user = :1",
+      user)
+    p = existingUserQuery.get()
+    if p:
+      # Clear the registration_id for this user.
+      p.registration_id = None
+      p.put()
+      self.response.set_status(200, "Token removed.")
+      self.response.out.write("Token removed. Unregistered.")
+
+
 
 class MainHandler(webapp.RequestHandler):
   def get(self):
@@ -55,6 +72,8 @@ class PushTestHandler(webapp.RequestHandler):
     me = models.Person.gql('WHERE user = :1', users.get_current_user()).get()
     c.getAuthToken()
     c.sendMessage(me)
+    self.response.set_status(200, "C2dm Message Sent.")
+    self.response.out.write("A test message has been sent to you. If you do not recieve it, check your settings, and re-register.")
 
 
 def main():

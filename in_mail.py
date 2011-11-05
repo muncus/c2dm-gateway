@@ -9,11 +9,11 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 import c2dmutil
 import models
 
-INCOMING_MAIL_DOMAIN = 'muncus.appspotmail.com'
+INCOMING_MAIL_DOMAIN = 'pagepusher.appspotmail.com'
 INCOMING_ADDRESS_RE = re.compile('(?P<recipient>[a-zA-Z0-9_+.-]+)@' + INCOMING_MAIL_DOMAIN)
 INCOMING_FROM_URL_RE = re.compile('/_ah/mail/(?P<recipient>[a-zA-Z0-9_+.%-]+)@' + INCOMING_MAIL_DOMAIN)
 
-MESSAGE_BASE_URL = 'https://muncus.appspot.com/m?msg='
+MESSAGE_BASE_URL = 'https://pagepusher.appspot.com/m?msg='
 
 class StoreMessageHandler(InboundMailHandler):
   """Save the message, but dont send c2dm message."""
