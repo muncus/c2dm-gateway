@@ -20,6 +20,11 @@ class RegistrationHandler(webapp.RequestHandler):
       self.redirect(users.create_login_url('/register'))
       return 
     token = self.request.get('token')
+    requested_sender = self.request.get('sender')
+
+    if not c2dmutil.IsValidSender(requested_sender):
+      self.response.set_status(400, "Incorrect Sender.")
+      return
 
     existingUserQuery = models.Person.gql(
       "WHERE user = :1",

@@ -17,6 +17,12 @@ class C2dmError(Exception):
   """Parent class for types of exception."""
   pass
 
+def IsValidSender(sender_address):
+  """Return true if supplied address is a valid C2dmSender."""
+  valid_sender = models.C2dmSender.gql('LIMIT 1').get().username
+  if sender_address.strip().lower() == valid_sender.strip().lower():
+    return True
+  return False
 
 class C2dmUtil(object):
   SERVICE_TOKEN_TYPE = 'ac2dm'
