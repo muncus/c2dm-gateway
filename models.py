@@ -1,6 +1,9 @@
 from google.appengine.ext import db
 
 class C2dmSender(db.Model):
+  # GCM uses api key.
+  apikey = db.StringProperty()
+  # C2DM uses ClientLogin, which is deprecated.
   username = db.StringProperty()
   password = db.StringProperty()
   authtoken = db.StringProperty()

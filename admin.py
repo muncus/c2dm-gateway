@@ -17,6 +17,7 @@ class CredentialsHandler(webapp.RequestHandler):
         <form action="/admin" method="post">
           <div> User: <input type="text" name="username" /></div>
           <div> password: <input type="password" name="password" /></div>
+          <div> api_key: <input type="text" name="apikey" /></div>
           <input type="submit"/>
         </form>
       </body>
@@ -26,11 +27,13 @@ class CredentialsHandler(webapp.RequestHandler):
   def post(self):
     user = self.request.get('username')
     pw = self.request.get('password')
+    ak = self.request.get('apikey')
     auth = models.C2dmSender.gql('').get() # just grab the first one. there should only be one.
     if not auth:
       auth = models.C2dmSender()
     auth.username = user
     auth.password = pw
+    auth.apikey = ak
     auth.put()
 
 

@@ -11,6 +11,7 @@ import urllib2
 
 AUTH_URL = 'https://www.google.com/accounts/ClientLogin'
 C2DM_URL = 'http://android.apis.google.com/c2dm/send'
+GCM_URL = 'http://android.googleapis.com/gcm/send'
 MAX_LENGTH = 1000 # maximum size of data.
 
 class C2dmError(Exception):
@@ -57,7 +58,6 @@ class C2dmUtil(object):
 
   def sendMessage(self, user, retry=True, **kwargs):
     """Sends a message to the specified user/Person."""
-    #TODO: and add size checking. must be < 1k.
     
     post_data = {
       'registration_id': user.registration_id,
@@ -76,8 +76,8 @@ class C2dmUtil(object):
       logging.info("trying to remove %d bytes from the body." % bytes_to_remove)
       post_data['data.body'] = post_data['data.body'][0:-1*bytes_to_remove]
 
-    req = urllib2.Request(C2DM_URL, urllib.urlencode(post_data))
-    req.add_header('Authorization', 'GoogleLogin auth=%s' % self.auth_info.authtoken)
+    req = urllib2.Request(GCM_URL, urllib.urlencode(post_data))
+    req.add_header('Authorization', 'key=%s' % self.auth_info.apikey)
 
     resp = urllib2.urlopen(req)
 

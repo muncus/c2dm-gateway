@@ -22,9 +22,9 @@ class RegistrationHandler(webapp.RequestHandler):
     token = self.request.get('token')
     requested_sender = self.request.get('sender')
 
-    if not c2dmutil.IsValidSender(requested_sender):
-      self.response.set_status(400, "Incorrect Sender.")
-      return
+    #if not c2dmutil.IsValidSender(requested_sender):
+    #  self.response.set_status(400, "Incorrect Sender.")
+    #  return
 
     existingUserQuery = models.Person.gql(
       "WHERE user = :1",
@@ -33,13 +33,16 @@ class RegistrationHandler(webapp.RequestHandler):
     if p:
       # if tokens match, no changes needed.
       if token == p.registration_id:
+        logging.info("User already registered. no work needed.")
         self.response.set_status(200, "already registered.")
       else:
+        logging.info("Change of token!")
         p.registration_id = token
         p.put()
         self.response.set_status(200, "Token updated.")
 
     else:
+      logging.info("New user!")
       p = models.Person()
       p.user = user
       p.registration_id = token
@@ -75,7 +78,8 @@ class PushTestHandler(webapp.RequestHandler):
     #send a test push message.
     c = c2dmutil.C2dmUtil()
     me = models.Person.gql('WHERE user = :1', users.get_current_user()).get()
-    c.getAuthToken()
+    #c.getAuthToken()
+    logging.info("Sending test message to: %s" % users.get_current_user())
     c.sendMessage(me)
     self.response.set_status(200, "C2dm Message Sent.")
     self.response.out.write("A test message has been sent to you. If you do not recieve it, check your settings, and re-register.")
