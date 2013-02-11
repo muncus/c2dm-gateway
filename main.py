@@ -11,20 +11,25 @@ import c2dmutil
 
 import models
 
+def redirectUnlessKlaxon(handler, path):
+  """redirects user to login screen, unless user-agent contains klaxon."""
+  if(handler.request.headers.has_key("user-agent")):
+    logging.info(handler.request.headers["user-agent"].lower())
+    if( "klaxon" in handler.request.headers["user-agent"].lower()):
+      logging.info("looks like klaxon: %s" %
+          handler.request.headers["user-agent"].lower())
+      handler.response.set_status(401, "Unauthorized")
+      handler.response.out.write("Unauthorized. try logging in.")
+  handler.redirect(users.create_login_url(path))
 
 class RegistrationHandler(webapp.RequestHandler):
   def get(self):
     user = users.get_current_user()
     if not user:
-      #self.response.set_status(403, "User not logged in")
-      self.redirect(users.create_login_url('/register'))
+      redirectUnlessKlaxon(self, "/register")
       return 
     token = self.request.get('token')
     requested_sender = self.request.get('sender')
-
-    #if not c2dmutil.IsValidSender(requested_sender):
-    #  self.response.set_status(400, "Incorrect Sender.")
-    #  return
 
     existingUserQuery = models.Person.gql(
       "WHERE user = :1",
@@ -54,7 +59,8 @@ class RegistrationHandler(webapp.RequestHandler):
     """Remove the registration token for the current user."""
     user = users.get_current_user()
     if not user:
-      self.response.set_status(403, "Not logged in.")
+      redirectUnlessKlaxon(self, "/unregister")
+      return
     existingUserQuery = models.Person.gql(
       "WHERE user = :1",
       user)
@@ -67,7 +73,6 @@ class RegistrationHandler(webapp.RequestHandler):
       self.response.out.write("Token removed. Unregistered.")
 
 
-
 class MainHandler(webapp.RequestHandler):
   def get(self):
     self.response.out.write('Hello world!')
@@ -75,11 +80,14 @@ class MainHandler(webapp.RequestHandler):
 class PushTestHandler(webapp.RequestHandler):
   """test by sending a stock push message."""
   def get(self):
+    user = users.get_current_user()
+    if not user:
+      redirectUnlessKlaxon(self, "/test")
+      return;
     #send a test push message.
     c = c2dmutil.C2dmUtil()
-    me = models.Person.gql('WHERE user = :1', users.get_current_user()).get()
-    #c.getAuthToken()
-    logging.info("Sending test message to: %s" % users.get_current_user())
+    me = models.Person.gql('WHERE user = :1', user).get()
+    logging.info("Sending test message to: %s" % user)
     c.sendMessage(me)
     self.response.set_status(200, "C2dm Message Sent.")
     self.response.out.write("A test message has been sent to you. If you do not recieve it, check your settings, and re-register.")
