@@ -46,12 +46,16 @@ class StoreMessageHandler(InboundMailHandler):
       m.owner = p.user
       m.sender = mail_message.sender
       m.subject = mail_message.subject
-      #TODO: make this handle messages better.
+      # Join multiple message bodies, if they exist.
       bodies = mail_message.bodies('text/plain')
-      m.body = bodies.next()[1].decode()
-      #m.body = mail_message.original.as_string()
-      #m.body = mail_message.bodies('text/plain')
+      bodytext = ''
+      for content_type, body in bodies:
+        bodytext += body.decode()
+      m.body = bodytext
+
+      # store the date header from the email, to keep an eye on latency.
       #m.email_date = mail_message.date
+
       m.put()
       logging.info("stored message!")
 
