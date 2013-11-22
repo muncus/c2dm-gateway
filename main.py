@@ -26,34 +26,38 @@ class RegistrationHandler(webapp.RequestHandler):
   def get(self):
     user = users.get_current_user()
     if not user:
-      redirectUnlessKlaxon(self, "/register")
+      redirectUnlessKlaxon(self, self.request.path)
       return 
-    token = self.request.get('token')
-    requested_sender = self.request.get('sender')
+    if self.request.path == "/unregister":
+      self.unregister()
+      return;
+    elif self.request.path == "/register":
+      token = self.request.get('token')
+      requested_sender = self.request.get('sender')
 
-    existingUserQuery = models.Person.gql(
-      "WHERE user = :1",
-      user)
-    p = existingUserQuery.get()
-    if p:
-      # if tokens match, no changes needed.
-      if token == p.registration_id:
-        logging.info("User already registered. no work needed.")
-        self.response.set_status(200, "already registered.")
+      existingUserQuery = models.Person.gql(
+        "WHERE user = :1",
+        user)
+      p = existingUserQuery.get()
+      if p:
+        # if tokens match, no changes needed.
+        if token == p.registration_id:
+          logging.info("User already registered. no work needed.")
+          self.response.set_status(200, "already registered.")
+        else:
+          logging.info("Change of token!")
+          p.registration_id = token
+          p.put()
+          self.response.set_status(200, "Token updated.")
+
       else:
-        logging.info("Change of token!")
+        logging.info("New user!")
+        p = models.Person()
+        p.user = user
         p.registration_id = token
+        p.enabled = True
         p.put()
-        self.response.set_status(200, "Token updated.")
-
-    else:
-      logging.info("New user!")
-      p = models.Person()
-      p.user = user
-      p.registration_id = token
-      p.enabled = True
-      p.put()
-      self.response.set_status(200, "Registered new user.")
+        self.response.set_status(200, "Registered new user.")
 
   def unregister(self):
     """Remove the registration token for the current user."""
@@ -97,6 +101,7 @@ def main():
   application = webapp.WSGIApplication(
     [('/', MainHandler),
      ('/register', RegistrationHandler),
+     ('/unregister', RegistrationHandler),
      ('/test', PushTestHandler),
     ], debug=True)
 
