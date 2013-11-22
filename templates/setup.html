@@ -4,6 +4,11 @@
 <p>
 Just scan the qrcode below, and press "Open in Browser". It will launch Klaxon with the relevant information pre-filled! All you need to do is press the "Register" button!
 <p>
+<ul>
+  <li>Sender project id: <code>{{sender}}</code></li>
+  <li>Base url: <code>{{url}}</code></li>
+  <li>User: <code>{{user}}</code></li>
+</ul>
 <img src="http://chart.apis.google.com/chart?cht=qr&chs=350x350&chld=L&choe=UTF-8&chl=intent%3A%2F%2Forg.nerdcircus.android.klaxon%2Fgcmsetup%3Fsender%3D{{sender}}%26url%3D{{url}}%26user%3D{{user}}">
 {%endblock%}
 

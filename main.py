@@ -121,8 +121,8 @@ class MainHandler(webapp.RequestHandler):
       template = self.jinja_env.get_template('setup.html')
       hostname = self.request.url[:-1 * len("/gcmsetup")]
       self.response.write(
-          template.render({'url': (hostname),
-                           'sender': (auth.sender),
+          template.render({'url': hostname,
+                           'sender': auth.sender,
                            'user': users.get_current_user().email()}))
       return
 
