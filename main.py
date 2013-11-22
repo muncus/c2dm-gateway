@@ -7,6 +7,10 @@ from google.appengine.api import users
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import util
 
+import jinja2
+import os
+import webapp2
+
 import c2dmutil
 
 import models
@@ -82,7 +86,17 @@ class RegistrationHandler(webapp.RequestHandler):
 
 class MainHandler(webapp.RequestHandler):
   def get(self):
-    self.response.out.write('Hello world!')
+    jinja_env = jinja2.Environment(autoescape=True,
+    loader=jinja2.FileSystemLoader(os.path.join(os.path.dirname(__file__), 'templates')))
+    if(self.request.path == "/"):
+      template = jinja_env.get_template('index.html')
+      self.response.write(template.render())
+      return;
+    else:
+      template = jinja_env.get_template('nope.html')
+      self.response.write(template.render())
+      return;
+      
 
 class PushTestHandler(webapp.RequestHandler):
   """test by sending a stock push message."""
@@ -106,6 +120,7 @@ def main():
      ('/register', RegistrationHandler),
      ('/unregister', RegistrationHandler),
      ('/test', PushTestHandler),
+     ('/.*', MainHandler),
     ], debug=True)
 
   util.run_wsgi_app(application)
