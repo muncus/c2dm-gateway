@@ -2,8 +2,8 @@ from google.appengine.ext import db
 
 class GCMSender(db.Model):
   # GCM uses api key.
-  apikey = db.StringProperty()
-  sender = db.StringProperty()
+  apikey = db.StringProperty(default="")
+  sender = db.StringProperty(default="")
 
 class Person(db.Model):
   """Represents a user of this service."""
