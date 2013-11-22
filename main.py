@@ -92,10 +92,30 @@ class MainHandler(webapp.RequestHandler):
       template = jinja_env.get_template('index.html')
       self.response.write(template.render())
       return;
+    elif(self.request.path == "/admin"):
+      if not users.is_current_user_admin():
+        self.response.set_status(401, "Unauthorized")
+        self.response.out.write("Unauthorized. try logging in.")
+        return;
+      auth = models.GCMSender.gql('').get() # just grab the first one. there should only be one.
+      template = jinja_env.get_template('admin.html')
+      self.response.write(
+          template.render({'apikey': auth.apikey, 'sender': auth.sender}))
+      return;
     else:
       template = jinja_env.get_template('nope.html')
       self.response.write(template.render())
       return;
+
+  def post(self):
+    ak = self.request.get('apikey')
+    sender = self.request.get('project_id')
+    auth = models.GCMSender.gql('').get() # just grab the first one. there should only be one.
+    if not auth:
+      auth = models.GCMSender()
+    auth.apikey = ak
+    auth.sender = sender
+    auth.put()
       
 
 class PushTestHandler(webapp.RequestHandler):

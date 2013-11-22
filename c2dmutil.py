@@ -18,12 +18,6 @@ class C2dmError(Exception):
   """Parent class for types of exception."""
   pass
 
-def IsValidSender(sender_address):
-  """Return true if supplied address is a valid C2dmSender."""
-  valid_sender = models.C2dmSender.gql('LIMIT 1').get().username
-  if sender_address.strip().lower() == valid_sender.strip().lower():
-    return True
-  return False
 
 class C2dmUtil(object):
   SERVICE_TOKEN_TYPE = 'ac2dm'
@@ -31,30 +25,7 @@ class C2dmUtil(object):
 
   def __init__(self):
     """load the token, user, and password."""
-    self.auth_info = models.C2dmSender.gql('LIMIT 1').get()
-
-  def getAuthToken(self):
-    """if authtoken is empty, make the ClientLogin request."""
-    if self.auth_info.authtoken:
-      return self.auth_info.authtoken
-
-    post_data = {
-      'Email': self.auth_info.username,
-      'Passwd': self.auth_info.password,
-      'service': self.SERVICE_TOKEN_TYPE,
-      'source': self.USERAGENT,
-      }
-    req = urllib2.Request(AUTH_URL, urllib.urlencode(post_data))
-    response = urllib2.urlopen(req)
-    
-    for l in response.readlines():
-      if 'Auth=' in l:
-        logging.info("Found auth line!")
-        token = l[5:].strip()
-        self.auth_info.authtoken = token
-        self.auth_info.put()
-
-    return self.auth_info.authtoken
+    self.auth_info = models.GCMSender.gql('LIMIT 1').get()
 
   def sendMessage(self, user, retry=True, **kwargs):
     """Sends a message to the specified user/Person."""
@@ -85,11 +56,10 @@ class C2dmUtil(object):
     if 401 == resp.code:
       #auth token failure. oh noes!
       if retry:
-        logging.warn("Sender Credentials not valid! trying to obtain new credentials.")
-        self.getAuthToken()
+        logging.warn("Sender Credentials not valid!")
         return self.sendMessage(user, retry=False)
       else:
-        logging.error("Could not obtain functional ClientLogin token!!!!")
+        logging.error("Could not obtain working credentials!!!!")
         return
 
     if 503 == resp.code:
