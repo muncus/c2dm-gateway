@@ -29,9 +29,13 @@ class RegistrationHandler(webapp.RequestHandler):
       redirectUnlessKlaxon(self, self.request.path)
       return 
     if self.request.path == "/unregister":
-      self.unregister()
+      self.unregister(user)
       return;
     elif self.request.path == "/register":
+      self.register(user)
+      return;
+
+    def register(self, user):
       token = self.request.get('token')
       requested_sender = self.request.get('sender')
 
@@ -59,9 +63,8 @@ class RegistrationHandler(webapp.RequestHandler):
         p.put()
         self.response.set_status(200, "Registered new user.")
 
-  def unregister(self):
+  def unregister(self, user):
     """Remove the registration token for the current user."""
-    user = users.get_current_user()
     if not user:
       redirectUnlessKlaxon(self, "/unregister")
       return
