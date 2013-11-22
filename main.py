@@ -14,6 +14,10 @@ import webapp2
 import c2dmutil
 
 import models
+class BaseHandler(webapp.RequestHandler):
+  def __init__(self):
+    self.jinja_env = jinja2.Environment(autoescape=True,
+       loader=jinja2.FileSystemLoader(os.path.join(os.path.dirname(__file__), 'templates')))
 
 def redirectUnlessKlaxon(handler, path):
   """redirects user to login screen, unless user-agent contains klaxon."""
@@ -85,11 +89,12 @@ class RegistrationHandler(webapp.RequestHandler):
 
 
 class MainHandler(webapp.RequestHandler):
+
   def get(self):
-    jinja_env = jinja2.Environment(autoescape=True,
-    loader=jinja2.FileSystemLoader(os.path.join(os.path.dirname(__file__), 'templates')))
+    self.jinja_env = jinja2.Environment(autoescape=True,
+       loader=jinja2.FileSystemLoader(os.path.join(os.path.dirname(__file__), 'templates')))
     if(self.request.path == "/"):
-      template = jinja_env.get_template('index.html')
+      template = self.jinja_env.get_template('index.html')
       self.response.write(template.render())
       return;
     elif(self.request.path == "/admin"):
@@ -98,16 +103,18 @@ class MainHandler(webapp.RequestHandler):
         self.response.out.write("Unauthorized. try logging in.")
         return;
       auth = models.GCMSender.gql('').get() # just grab the first one. there should only be one.
-      template = jinja_env.get_template('admin.html')
+      template = self.jinja_env.get_template('admin.html')
       self.response.write(
           template.render({'apikey': auth.apikey, 'sender': auth.sender}))
       return;
     else:
-      template = jinja_env.get_template('nope.html')
+      template = self.jinja_env.get_template('nope.html')
       self.response.write(template.render())
       return;
 
   def post(self):
+    self.jinja_env = jinja2.Environment(autoescape=True,
+       loader=jinja2.FileSystemLoader(os.path.join(os.path.dirname(__file__), 'templates')))
     ak = self.request.get('apikey')
     sender = self.request.get('project_id')
     auth = models.GCMSender.gql('').get() # just grab the first one. there should only be one.
@@ -121,6 +128,8 @@ class MainHandler(webapp.RequestHandler):
 class PushTestHandler(webapp.RequestHandler):
   """test by sending a stock push message."""
   def get(self):
+    self.jinja_env = jinja2.Environment(autoescape=True,
+       loader=jinja2.FileSystemLoader(os.path.join(os.path.dirname(__file__), 'templates')))
     user = users.get_current_user()
     if not user:
       redirectUnlessKlaxon(self, "/test")
@@ -128,10 +137,17 @@ class PushTestHandler(webapp.RequestHandler):
     #send a test push message.
     c = c2dmutil.C2dmUtil()
     me = models.Person.gql('WHERE user = :1', user).get()
+    logging.info(me)
+    if( not me ):
+      template = self.jinja_env.get_template('base.html')
+      self.response.set_status(400, "No Message Sent.")
+      self.response.write(template.render({'content': "You are not registered. no message sent."}))
+      return;
     logging.info("Sending test message to: %s" % user)
     c.sendMessage(me)
+    template = self.jinja_env.get_template('base.html')
     self.response.set_status(200, "C2dm Message Sent.")
-    self.response.out.write("A test message has been sent to you. If you do not recieve it, check your settings, and re-register.")
+    self.response.write(template.render({'content': "Message sent."}))
 
 
 def main():
